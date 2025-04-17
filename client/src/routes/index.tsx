@@ -1,12 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
-  component: Index,
+  component: Login,
 });
 
-function Index() {
+function Login() {
   return (
-    <div className="flex flex-col items-center justify-center my-8">
+    <div className="flex flex-col items-center justify-center p-12">
       <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
         <legend className="fieldset-legend">Login</legend>
 
@@ -18,6 +18,9 @@ function Index() {
 
         <button className="btn btn-neutral mt-4">Login</button>
       </fieldset>
+      <p>
+        Don't have an account? <Link to="/">Sign Up</Link>
+      </p>
     </div>
   );
 }
