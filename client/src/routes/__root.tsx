@@ -31,7 +31,7 @@ export const Route = createRootRoute({
     <>
       <div className="navbar bg-base-100 shadow-sm flex">
         <div className="flex-1"></div>
-        <NavbarLink to="/">Login</NavbarLink>
+        <NavbarLink to="/login">Login</NavbarLink>
         <NavbarLink to="/about">About</NavbarLink>
       </div>
       <Outlet />
