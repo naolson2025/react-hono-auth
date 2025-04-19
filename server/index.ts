@@ -5,6 +5,8 @@ import { jwt, sign } from 'hono/jwt';
 import type { JwtVariables } from 'hono/jwt';
 import { dbConn } from './db/db';
 import { loginValidator } from './schemas/login-schema';
+import { csrf } from 'hono/csrf';
+import { cors } from 'hono/cors';
 
 const db = dbConn();
 const app = new Hono<{ Variables: JwtVariables }>();
@@ -26,6 +28,55 @@ async function generateToken(userId: string) {
 
 const route = app
   .use('/*', serveStatic({ root: './client/dist' }))
+  .use('/api/*', cors())
+  .use('/api/*', csrf())
+  .post('/api/signup', loginValidator, async (c) => {
+    const { email, password } = c.req.valid('json');
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      console.error('JWT_SECRET is not configured.');
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+
+    try {
+      // 1. User Registration
+      const userId = crypto.randomUUID();
+      const passwordHash = await Bun.password.hash(password);
+
+      const insertQuery = db.query(
+        'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)'
+      );
+      insertQuery.run(userId, email, passwordHash);
+
+      // 2. JWT Generation
+      const token = await generateToken(userId);
+
+      // 3. Setting the Secure HttpOnly Cookie
+      setCookie(c, 'authToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
+        sameSite: 'Lax', // Or 'Strict'
+        path: '/',
+        maxAge: 86400, // 24 hours in seconds
+      });
+
+      // 4. Return Success Response
+      return c.json({
+        message: 'User registered successfully',
+        user: { id: userId, email: email },
+      }); // Avoid sending hash
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes('UNIQUE constraint failed')
+      ) {
+        return c.json({ error: 'Email already exists' }, 409);
+      }
+      console.error('Signup error:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  })
   .post('/api/login', loginValidator, async (c) => {
     const { email, password } = c.req.valid('json');
     const secret = process.env.JWT_SECRET;
