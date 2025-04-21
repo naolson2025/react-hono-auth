@@ -31,3 +31,13 @@ export const getUserByEmail = (email: string) => {
   } | null;
   return user;
 }
+
+export const getUserById = (id: string) => {
+  const db = dbConn();
+  const userQuery = db.query('SELECT id, email FROM users WHERE id =?');
+  const user = userQuery.get(id) as {
+    id: string;
+    email: string;
+  } | null;
+  return user;
+}

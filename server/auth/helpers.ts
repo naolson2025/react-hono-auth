@@ -13,7 +13,7 @@ export const generateToken = async (userId: string) => {
   const secret = process.env.JWT_SECRET;
   const now = Math.floor(Date.now() / 1000);
   const payload = {
-    sub: String(userId), // Subject (user ID)
+    sub: userId, // subject
     iat: now, // Issued At
     exp: now + 24 * 60 * 60, // Expiration Time (24 hours)
   };

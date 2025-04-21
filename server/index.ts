@@ -3,20 +3,19 @@ import { serveStatic } from 'hono/bun';
 import { setCookie, deleteCookie } from 'hono/cookie';
 import { jwt } from 'hono/jwt';
 import type { JwtVariables } from 'hono/jwt';
-import { dbConn } from './db/db';
 import { loginValidator } from './schemas/login-schema';
 import { csrf } from 'hono/csrf';
 import { cors } from 'hono/cors';
-import { getUserByEmail, insertUser } from './db/queries';
+import { getUserByEmail, getUserById, insertUser } from './db/queries';
 import { cookieOpts, generateToken } from './auth/helpers';
 
+// Fail to start app if no JWT_SECRET is configured
 const secret = process.env.JWT_SECRET;
 if (!secret) {
   console.error('JWT_SECRET is not configured.');
   process.exit(1);
 }
 
-const db = dbConn();
 const app = new Hono<{ Variables: JwtVariables }>();
 
 const route = app
@@ -92,30 +91,22 @@ const route = app
     '/api/protected/me',
     jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' }),
     async (c) => {
-      const payload = c.get('jwtPayload'); // Access payload set by middleware
+      const payload = c.get('jwtPayload');
 
       if (!payload || !payload.sub) {
-        // Should ideally not happen if middleware is working, but good practice
         return c.json({ error: 'Invalid token payload' }, 401);
       }
 
       try {
-        // Fetch minimal user details using the user ID from the token (payload.sub)
-        const userQuery = db.query('SELECT id, email FROM users WHERE id =?');
-        const user = userQuery.get(payload.sub) as {
-          id: string;
-          email: string;
-        } | null; // Ensure sub is converted if needed
+        const user = getUserById(payload.sub);
 
         if (!user) {
           return c.json({ error: 'User not found' }, 404);
         }
 
-        // Return non-sensitive user info
         return c.json({
           id: user.id,
           email: user.email,
-          // Add other safe fields like username if available
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
