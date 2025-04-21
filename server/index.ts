@@ -8,6 +8,7 @@ import { csrf } from 'hono/csrf';
 import { cors } from 'hono/cors';
 import { getUserByEmail, getUserById, insertUser } from './db/queries';
 import { cookieOpts, generateToken } from './auth/helpers';
+import { dbConn } from './db/db';
 
 // Fail to start app if no JWT_SECRET is configured
 const secret = process.env.JWT_SECRET;
@@ -23,10 +24,11 @@ const route = app
   .use('/api/*', cors())
   .use('/api/*', csrf())
   .post('/api/signup', loginValidator, async (c) => {
+    const db = dbConn();
     const { email, password } = c.req.valid('json');
 
     try {
-      const userId = await insertUser(email, password);
+      const userId = await insertUser(db, email, password);
 
       const token = await generateToken(userId);
 
@@ -48,10 +50,11 @@ const route = app
     }
   })
   .post('/api/login', loginValidator, async (c) => {
+    const db = dbConn();
     const { email, password } = c.req.valid('json');
 
     try {
-      const user = getUserByEmail(email);
+      const user = getUserByEmail(db, email);
 
       if (!user) {
         return c.json({ error: 'Invalid credentials' }, 401);
@@ -91,6 +94,7 @@ const route = app
     '/api/protected/me',
     jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' }),
     async (c) => {
+      const db = dbConn();
       const payload = c.get('jwtPayload');
 
       if (!payload || !payload.sub) {
@@ -98,7 +102,7 @@ const route = app
       }
 
       try {
-        const user = getUserById(payload.sub);
+        const user = getUserById(db, payload.sub);
 
         if (!user) {
           return c.json({ error: 'User not found' }, 404);

@@ -11,19 +11,22 @@ export const dbConn = () => {
     db = new Database(dbPath);
     db.exec('PRAGMA journal_mode = WAL;');
 
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        favorite_color TEXT,
-        favorite_animal TEXT
-      );
-    `);
-
-    console.log('Database created');
+    applySchema(db);
   }
 
   console.log('Database connected');
   return db;
+};
+
+export const applySchema = (dbInstance: Database) => {
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      favorite_color TEXT,
+      favorite_animal TEXT
+    );
+  `);
+  console.log('Schema applied to DB instance.');
 };
