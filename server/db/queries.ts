@@ -19,3 +19,15 @@ export const insertUser = async (email: string, password: string) => {
   };
   return user.id;
 };
+
+export const getUserByEmail = (email: string) => {
+  const db = dbConn();
+  const userQuery = db.query(
+    'SELECT id, password_hash FROM users WHERE email =?'
+  );
+  const user = userQuery.get(email) as {
+    id: string;
+    password_hash: string;
+  } | null;
+  return user;
+}

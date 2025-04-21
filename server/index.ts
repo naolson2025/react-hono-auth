@@ -1,13 +1,14 @@
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
 import { setCookie, deleteCookie } from 'hono/cookie';
-import { jwt, sign } from 'hono/jwt';
+import { jwt } from 'hono/jwt';
 import type { JwtVariables } from 'hono/jwt';
 import { dbConn } from './db/db';
 import { loginValidator } from './schemas/login-schema';
 import { csrf } from 'hono/csrf';
 import { cors } from 'hono/cors';
-import { insertUser } from './db/queries';
+import { getUserByEmail, insertUser } from './db/queries';
+import { cookieOpts, generateToken } from './auth/helpers';
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -17,21 +18,6 @@ if (!secret) {
 
 const db = dbConn();
 const app = new Hono<{ Variables: JwtVariables }>();
-
-async function generateToken(userId: string) {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is not defined');
-  }
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    sub: String(userId), // Subject (user ID)
-    iat: now, // Issued At
-    exp: now + 24 * 60 * 60, // Expiration Time (24 hours)
-  };
-  const token = await sign(payload, secret);
-  return token;
-}
 
 const route = app
   .use('/*', serveStatic({ root: './client/dist' }))
@@ -43,19 +29,10 @@ const route = app
     try {
       const userId = await insertUser(email, password);
 
-      // 2. JWT Generation
       const token = await generateToken(userId);
 
-      // 3. Setting the Secure HttpOnly Cookie
-      setCookie(c, 'authToken', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
-        sameSite: 'Lax', // Or 'Strict'
-        path: '/',
-        maxAge: 86400, // 24 hours in seconds
-      });
+      setCookie(c, 'authToken', token, cookieOpts);
 
-      // 4. Return Success Response
       return c.json({
         message: 'User registered successfully',
         user: { id: userId, email: email },
@@ -75,20 +52,12 @@ const route = app
     const { email, password } = c.req.valid('json');
 
     try {
-      // 2. Credential Verification
-      const userQuery = db.query(
-        'SELECT id, password_hash FROM users WHERE email =?'
-      );
-      const user = userQuery.get(email) as {
-        id: string;
-        password_hash: string;
-      } | null;
+      const user = getUserByEmail(email);
 
       if (!user) {
         return c.json({ error: 'Invalid credentials' }, 401);
       }
 
-      // Verify password securely
       const passwordMatch = await Bun.password.verify(
         password,
         user.password_hash
@@ -98,24 +67,14 @@ const route = app
         return c.json({ error: 'Invalid credentials' }, 401);
       }
 
-      // 3. JWT Generation
       const token = await generateToken(user.id);
 
-      // 4. Setting the Secure HttpOnly Cookie
-      setCookie(c, 'authToken', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
-        sameSite: 'Lax',
-        path: '/',
-        maxAge: 86400, // 24 hours in seconds
-        // domain: 'yourdomain.com' // Optional: Specify if needed
-      });
+      setCookie(c, 'authToken', token, cookieOpts);
 
-      // 5. Return Success Response
       return c.json({
         message: 'Login successful',
         user: { id: user.id, email: email },
-      }); // Avoid sending hash
+      });
     } catch (error) {
       console.error('Login error:', error);
       return c.json({ error: 'Internal server error' }, 500);
@@ -124,9 +83,7 @@ const route = app
   .post('/api/logout', async (c) => {
     deleteCookie(c, 'authToken', {
       path: '/',
-      secure: process.env.NODE_ENV === 'production', // Match secure flag if used
-      // domain: 'yourdomain.com' // Match domain if used
-      // httpOnly doesn't need to be specified for deletion
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return c.json({ message: 'Logout successful' });
