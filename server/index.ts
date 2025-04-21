@@ -42,6 +42,7 @@ const route = app
     try {
       // 1. User Registration
       const userId = crypto.randomUUID();
+      // salt is automatically generated & included
       const passwordHash = await Bun.password.hash(password);
 
       const insertQuery = db.query(
@@ -65,7 +66,7 @@ const route = app
       return c.json({
         message: 'User registered successfully',
         user: { id: userId, email: email },
-      }); // Avoid sending hash
+      });
     } catch (error) {
       if (
         error instanceof Error &&
@@ -117,7 +118,7 @@ const route = app
       setCookie(c, 'authToken', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
-        sameSite: 'Lax', // Or 'Strict'
+        sameSite: 'Lax',
         path: '/',
         maxAge: 86400, // 24 hours in seconds
         // domain: 'yourdomain.com' // Optional: Specify if needed
@@ -145,7 +146,7 @@ const route = app
   })
   .get(
     '/api/protected/me',
-    jwt({ secret: process.env.JWT_SECRET! }),
+    jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' }),
     async (c) => {
       const payload = c.get('jwtPayload'); // Access payload set by middleware
 
@@ -157,8 +158,8 @@ const route = app
       try {
         // Fetch minimal user details using the user ID from the token (payload.sub)
         const userQuery = db.query('SELECT id, email FROM users WHERE id =?');
-        const user = userQuery.get(Number(payload.sub)) as {
-          id: number;
+        const user = userQuery.get(payload.sub) as {
+          id: string;
           email: string;
         } | null; // Ensure sub is converted if needed
 
