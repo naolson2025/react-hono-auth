@@ -7,6 +7,13 @@ import { dbConn } from './db/db';
 import { loginValidator } from './schemas/login-schema';
 import { csrf } from 'hono/csrf';
 import { cors } from 'hono/cors';
+import { insertUser } from './db/queries';
+
+const secret = process.env.JWT_SECRET;
+if (!secret) {
+  console.error('JWT_SECRET is not configured.');
+  process.exit(1);
+}
 
 const db = dbConn();
 const app = new Hono<{ Variables: JwtVariables }>();
@@ -32,23 +39,9 @@ const route = app
   .use('/api/*', csrf())
   .post('/api/signup', loginValidator, async (c) => {
     const { email, password } = c.req.valid('json');
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      console.error('JWT_SECRET is not configured.');
-      return c.json({ error: 'Internal server error' }, 500);
-    }
 
     try {
-      // 1. User Registration
-      const userId = crypto.randomUUID();
-      // salt is automatically generated & included
-      const passwordHash = await Bun.password.hash(password);
-
-      const insertQuery = db.query(
-        'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)'
-      );
-      insertQuery.run(userId, email, passwordHash);
+      const userId = await insertUser(email, password);
 
       // 2. JWT Generation
       const token = await generateToken(userId);
@@ -80,12 +73,6 @@ const route = app
   })
   .post('/api/login', loginValidator, async (c) => {
     const { email, password } = c.req.valid('json');
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      console.error('JWT_SECRET is not configured.');
-      return c.json({ error: 'Internal server error' }, 500);
-    }
 
     try {
       // 2. Credential Verification
