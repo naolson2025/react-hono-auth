@@ -1,8 +1,11 @@
-import { dbConn } from './db';
 import { randomUUID, type UUID } from 'crypto';
 import { Database } from 'bun:sqlite';
 
-export const insertUser = async (db: Database, email: string, password: string) => {
+export const insertUser = async (
+  db: Database,
+  email: string,
+  password: string
+) => {
   const userId = randomUUID();
   // salt is automatically generated & included
   const passwordHash = await Bun.password.hash(password);
@@ -29,7 +32,7 @@ export const getUserByEmail = (db: Database, email: string) => {
     password_hash: string;
   } | null;
   return user;
-}
+};
 
 export const getUserById = (db: Database, id: string) => {
   const userQuery = db.query('SELECT id, email FROM users WHERE id =?');
@@ -38,4 +41,4 @@ export const getUserById = (db: Database, id: string) => {
     email: string;
   } | null;
   return user;
-}
+};

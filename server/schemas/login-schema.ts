@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(10),
+  password: z.string().min(10, { message: "Password must be at least 10 characters long" }),
 });
 
 export const loginValidator = zValidator('json', loginSchema, (result, c) => {

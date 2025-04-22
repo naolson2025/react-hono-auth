@@ -28,5 +28,4 @@ export const applySchema = (dbInstance: Database) => {
       favorite_animal TEXT
     );
   `);
-  console.log('Schema applied to DB instance.');
 };
