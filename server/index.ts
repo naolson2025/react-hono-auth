@@ -37,7 +37,7 @@ const route = app
       return c.json({
         message: 'User registered successfully',
         user: { id: userId, email: email },
-      });
+      }, 201);
     } catch (error) {
       if (
         error instanceof Error &&
