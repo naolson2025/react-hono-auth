@@ -86,6 +86,8 @@ const route = app
     deleteCookie(c, 'authToken', {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      httpOnly: true,
     });
 
     return c.json({ message: 'Logout successful' });
