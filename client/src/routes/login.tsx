@@ -19,9 +19,9 @@ function RouteComponent() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, password }),
-      credentials: 'include', // ESSENTIAL: Sends the authToken cookie
     });
     if (response.ok) {
+      setServerErrors([]);
       const user = await response.json();
       console.log('Login successful:', user);
       // Handle successful login (e.g., redirect or update state)
