@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  useSearch,
+  useNavigate,
+} from '@tanstack/react-router';
 import { CircleX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -8,6 +13,7 @@ export const Route = createFileRoute('/login')({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const searchParams = useSearch({ from: '/login' }) as { message: string };
   const message = searchParams.message;
 
@@ -34,9 +40,7 @@ function RouteComponent() {
     });
     if (response.ok) {
       setServerErrors([]);
-      const user = await response.json();
-      console.log('Login successful:', user);
-      // Handle successful login (e.g., redirect or update state)
+      navigate({ to: '/my-page' })
     } else {
       const error = await response.json();
       setServerErrors(error.errors);
