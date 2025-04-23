@@ -29,3 +29,7 @@ Content-Type: application/json
 ### Get my info
 GET http://localhost:3000/api/protected/me
 Cookie: {{login.response.headers.Set-Cookie}}
+
+### Logout
+POST http://localhost:3000/api/logout
+Content-Type: application/json
