@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/login')({
@@ -8,6 +9,7 @@ export const Route = createFileRoute('/login')({
 function RouteComponent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [serverErrors, setServerErrors] = useState<string[]>([]);
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -25,8 +27,7 @@ function RouteComponent() {
       // Handle successful login (e.g., redirect or update state)
     } else {
       const error = await response.json();
-      console.error('Login failed:', error);
-      // Handle login failure (e.g., display error message)
+      setServerErrors(error.errors);
     }
   };
 
@@ -38,20 +39,27 @@ function RouteComponent() {
         <label className="fieldset-label">Email</label>
         <input
           type="email"
-          className="input"
+          className="input validator"
           placeholder="Email"
+          required
           onChange={(e) => setEmail(e.target.value)}
         />
+        <div className="validator-hint mt-0">Enter valid email address</div>
 
         <label className="fieldset-label">Password</label>
         <input
           type="password"
-          className="input"
+          className="input validator"
+          required
+          minLength={10}
           placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className="validator-hint mt-0">
+          Password must be at least 10 characters
+        </div>
 
-        <button className="btn btn-neutral mt-4" onClick={handleClick}>
+        <button className="btn btn-neutral" onClick={handleClick}>
           Login
         </button>
       </fieldset>
@@ -61,6 +69,20 @@ function RouteComponent() {
           Sign Up
         </Link>
       </p>
+
+      {serverErrors.length > 0 && (
+        <div role="alert" className="alert alert-error m-2">
+          <CircleX className="h-6 w-6" />
+          <div>
+            {serverErrors.map((error, index) => (
+              <span key={index}>
+                {error}
+                <br />
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -34,7 +34,6 @@ export const Route = createRootRoute({
           <NavbarLink to="/">Home</NavbarLink>
         </div>
         <NavbarLink to="/login">Login</NavbarLink>
-        <NavbarLink to="/about">About</NavbarLink>
       </div>
       <Outlet />
       <TanStackRouterDevtools />
