@@ -1,33 +1,19 @@
-// src/contexts/AuthContext.tsx
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
+import { AuthContext } from './use-auth-hook';
 
 interface User {
-  id: number | string;
+  id: string;
   email: string;
   // Add other non-sensitive fields as needed
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<boolean>; // Returns true on success
   logout: () => Promise<void>;
 }
-
-// Create context with a default undefined value
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Custom hook to use the auth context
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// src/contexts/AuthContext.tsx (continued)
 
 interface AuthProviderProps {
   children: ReactNode;
