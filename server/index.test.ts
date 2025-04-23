@@ -140,3 +140,38 @@ describe('logout endpoint', () => {
     expect(cookies).toMatch(/authToken=;/);
   });
 });
+
+describe('api/protected/me endpoint', () => {
+  it('should return user data if authenticated', async () => {
+    const req = signupReq();
+    const res = await app.fetch(req);
+    expect(res.status).toBe(201);
+
+    const meReq = new Request('http://localhost:3000/api/protected/me', {
+      method: 'GET',
+      headers: {
+        Cookie: res.headers.get('set-cookie')!,
+      },
+    });
+    const res2 = await app.fetch(meReq);
+    const json = await res2.json();
+    expect(res2.status).toBe(200);
+    expect(json).toEqual({
+      id: expect.any(String),
+      email: 'test@test.com',
+    });
+  });
+
+  it('should return 401 if cookie is invalid', async () => {
+    const meReq = new Request('http://localhost:3000/api/protected/me', {
+      method: 'GET',
+      headers: {
+        Cookie: 'authToken=invalidtoken',
+      },
+    });
+    const res2 = await app.fetch(meReq);
+    const resBody = await res2.text()
+    expect(res2.status).toBe(401);
+    expect(resBody).toBe('Unauthorized');
+  })
+});

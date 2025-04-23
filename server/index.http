@@ -33,3 +33,4 @@ Cookie: {{login.response.headers.Set-Cookie}}
 ### Logout
 POST http://localhost:3000/api/logout
 Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
