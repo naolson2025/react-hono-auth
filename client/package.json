@@ -14,7 +14,8 @@
     "@tanstack/react-router-devtools": "^1.116.0",
     "lucide-react": "^0.488.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

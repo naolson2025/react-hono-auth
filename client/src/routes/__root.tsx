@@ -1,10 +1,11 @@
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   Link,
   Outlet,
   useMatchRoute,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { AuthContextType } from '../auth/AuthContext';
 
 function NavbarLink({
   to,
@@ -26,7 +27,11 @@ function NavbarLink({
   );
 }
 
-export const Route = createRootRoute({
+interface RootRouteContext {
+  auth: AuthContextType | undefined;
+}
+
+export const Route = createRootRouteWithContext<RootRouteContext>()({
   component: () => (
     <>
       <div className="navbar bg-base-100 shadow-sm flex">
@@ -34,6 +39,7 @@ export const Route = createRootRoute({
           <NavbarLink to="/">Home</NavbarLink>
         </div>
         <NavbarLink to="/login">Login</NavbarLink>
+        <NavbarLink to="/my-page">My Page</NavbarLink>
       </div>
       <Outlet />
       <TanStackRouterDevtools />
