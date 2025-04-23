@@ -147,7 +147,7 @@ describe('api/protected/me endpoint', () => {
     const res = await app.fetch(req);
     expect(res.status).toBe(201);
 
-    const meReq = new Request('http://localhost:3000/api/protected/me', {
+    const meReq = new Request('http://localhost:3000/api/auth/me', {
       method: 'GET',
       headers: {
         Cookie: res.headers.get('set-cookie')!,
@@ -163,7 +163,7 @@ describe('api/protected/me endpoint', () => {
   });
 
   it('should return 401 if cookie is invalid', async () => {
-    const meReq = new Request('http://localhost:3000/api/protected/me', {
+    const meReq = new Request('http://localhost:3000/api/auth/me', {
       method: 'GET',
       headers: {
         Cookie: 'authToken=invalidtoken',
