@@ -14,7 +14,6 @@ export const dbConn = () => {
     applySchema(db);
   }
 
-  console.log('Database connected');
   return db;
 };
 
