@@ -29,8 +29,7 @@ function RouteComponent() {
     }
   }, [message]);
 
-  const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handleClick = async () => {
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: {
@@ -76,7 +75,7 @@ function RouteComponent() {
             Password must be at least 10 characters
           </div>
 
-          <button className="btn btn-neutral" onClick={handleClick}>
+          <button className="btn btn-accent" onClick={handleClick}>
             Login
           </button>
         </fieldset>
