@@ -11,8 +11,9 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<boolean>; // Returns true on success
+  login: (credentials: { email: string; password: string }) => Promise<boolean>;
   logout: () => Promise<void>;
+  signup: (credentials: { email: string; password: string }) => Promise<void>;
   serverErrors: string[];
   email: string;
   setEmail: (email: string) => void;
@@ -62,12 +63,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Run checkAuthStatus on initial mount
   useEffect(() => {
     checkAuthStatus();
-  }, []); // Empty dependency array ensures it runs only once on mount
+  }, []);
 
-  // Login function
   const login = async (credentials: { email: string; password: string }): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -104,7 +103,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Logout function
+  const signup = async (credentials: { email: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (response.ok) {
+        const signupData = await response.json();
+        setUser(signupData.user);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        setEmail(''); 
+        setPassword(''); 
+        setServerErrors([]); 
+      } else {
+        const error = await response.json();
+        console.error('Signup failed:', response.statusText);
+        setIsLoading(false);
+        setServerErrors(error.errors || ['Signup failed']);
+      }
+    }
+    catch (error) {
+      console.error('Signup error:', error);
+      setIsLoading(false);
+    }
+  }
+
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -144,6 +175,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setEmail,
     password,
     setPassword,
+    signup,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

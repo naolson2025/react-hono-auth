@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CircleX } from 'lucide-react';
-import { useState } from 'react';
+import { useAuth } from '../auth/use-auth-hook';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/signup')({
   component: RouteComponent,
@@ -8,59 +9,61 @@ export const Route = createFileRoute('/signup')({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [serverErrors, setServerErrors] = useState<string[]>([]);
+  const {
+    setEmail,
+    setPassword,
+    email,
+    password,
+    signup,
+    isAuthenticated,
+    serverErrors,
+  } = useAuth();
 
-  const handleClick = async () => {
-    const response = await fetch('/api/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    if (response.ok) {
-      setServerErrors([]);
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate({ to: '/my-page' });
-    } else {
-      const error = await response.json();
-      setServerErrors(error.errors);
     }
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signup({ email, password });
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-12">
-      <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
-        <legend className="fieldset-legend">Sign Up</legend>
+      <form onSubmit={handleSubmit}>
+        <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
+          <legend className="fieldset-legend">Sign Up</legend>
 
-        <label className="fieldset-label">Email</label>
-        <input
-          type="email"
-          className="input validator"
-          placeholder="Email"
-          required
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <div className="validator-hint mt-0">Enter valid email address</div>
+          <label className="fieldset-label">Email</label>
+          <input
+            type="email"
+            className="input validator"
+            placeholder="Email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <div className="validator-hint mt-0">Enter valid email address</div>
 
-        <label className="fieldset-label">Password</label>
-        <input
-          type="password"
-          className="input validator"
-          required
-          minLength={10}
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <div className="validator-hint mt-0">
-          Password must be at least 10 characters
-        </div>
+          <label className="fieldset-label">Password</label>
+          <input
+            type="password"
+            className="input validator"
+            required
+            minLength={10}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="validator-hint mt-0">
+            Password must be at least 10 characters
+          </div>
 
-        <button className="btn btn-primary" onClick={handleClick}>
-          Sign Up
-        </button>
-      </fieldset>
+          <button className="btn btn-primary">Sign Up</button>
+        </fieldset>
+      </form>
       <p className="p-6">
         Already have an account?{' '}
         <Link to="/login" className="link link-secondary">

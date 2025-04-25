@@ -31,10 +31,10 @@ auth
         error instanceof Error &&
         error.message.includes('UNIQUE constraint failed')
       ) {
-        return c.json({ error: 'Email already exists' }, 409);
+        return c.json({ errors: ['Email already exists'] }, 409);
       }
       console.error('Signup error:', error);
-      return c.json({ error: 'Internal server error' }, 500);
+      return c.json({ errors: ['Internal server error'] }, 500);
     }
   })
   .post('/api/login', loginValidator, async (c) => {
