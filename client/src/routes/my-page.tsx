@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/my-page')({
   beforeLoad: ({ context, location }) => {
@@ -10,14 +10,18 @@ export const Route = createFileRoute('/my-page')({
           redirect: location.href,
           message: 'Must be logged in to access this page',
         },
-        replace: true // Optional: replace history entry instead of pushing
+        replace: true, // Optional: replace history entry instead of pushing
       });
     }
     // If authenticated, proceed to load the route component/children
   },
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  return <div>Hello "/my-page"!</div>
+  return (
+    <div className="flex flex-col items-center justify-center p-12">
+      <h1 className="text-4xl font-bold">Your own Page!</h1>
+    </div>
+  );
 }

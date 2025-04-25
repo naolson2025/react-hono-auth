@@ -1,9 +1,10 @@
 import { Link, useMatchRoute } from '@tanstack/react-router';
 import { useAuth } from '../auth/use-auth-hook';
+import { Lock } from 'lucide-react';
 
 export const Navbar = () => {
   const matchRoute = useMatchRoute();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const isHomeActive = matchRoute({ to: '/', fuzzy: false });
   const isLoginActive = matchRoute({ to: '/login', fuzzy: false });
@@ -19,20 +20,34 @@ export const Navbar = () => {
           Home
         </Link>
       </div>
-      {!isAuthenticated && (
+      {isAuthenticated ? (
+        <>
+          <div className="mx-1">{user?.email}</div>
+          <button className="btn btn-warning mx-1" onClick={logout}>
+            Logout
+          </button>
+        </>
+      ) : (
         <Link
           to="/login"
-          className={`btn btn-soft btn-accent mx-2 ${isLoginActive ? 'btn-active' : ''}`}
+          className={`btn btn-soft btn-accent mx-1 ${isLoginActive ? 'btn-active' : ''}`}
         >
           Login
         </Link>
       )}
-      <Link
-        to="/my-page"
-        className={`btn btn-soft btn-accent mx-2 ${isMyPageActive ? 'btn-active' : ''}`}
+      <div
+        className={isAuthenticated ? '' : 'tooltip tooltip-bottom'}
+        data-tip={isAuthenticated ? '' : 'login required'}
       >
-        My Page
-      </Link>
+        <Link
+          to="/my-page"
+          className={`btn btn-soft btn-accent mx-1 ${isMyPageActive ? 'btn-active' : ''}`}
+          disabled={!isAuthenticated}
+        >
+          {!isAuthenticated && <Lock className="size-4" />}
+          My Page
+        </Link>
+      </div>
     </div>
   );
 };

@@ -86,6 +86,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(loginData.user);
         setIsAuthenticated(true);
         setIsLoading(false);
+        setEmail(''); 
+        setPassword(''); 
+        setServerErrors([]); 
         return true;
       } else {
         const error = await response.json();
@@ -108,6 +111,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         credentials: 'include', // ESSENTIAL: Sends cookie for backend (though backend just clears)
