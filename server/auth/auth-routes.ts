@@ -45,7 +45,7 @@ auth
       const user = getUserByEmail(db, email);
 
       if (!user) {
-        return c.json({ error: 'Invalid credentials' }, 401);
+        return c.json({ errors: ['Invalid credentials'] }, 401);
       }
 
       const passwordMatch = await Bun.password.verify(
@@ -54,7 +54,7 @@ auth
       );
 
       if (!passwordMatch) {
-        return c.json({ error: 'Invalid credentials' }, 401);
+        return c.json({ errors: ['Invalid credentials'] }, 401);
       }
 
       const token = await generateToken(user.id);

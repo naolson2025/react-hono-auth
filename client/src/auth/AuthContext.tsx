@@ -13,6 +13,11 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<boolean>; // Returns true on success
   logout: () => Promise<void>;
+  serverErrors: string[];
+  email: string;
+  setEmail: (email: string) => void;
+  password: string;
+  setPassword: (password: string) => void;
 }
 
 interface AuthProviderProps {
@@ -23,6 +28,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading initially
+  const [serverErrors, setServerErrors] = useState<string[]>([]);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Function to check session validity on initial load/refresh
   const checkAuthStatus = async () => {
@@ -74,19 +82,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
 
       if (response.ok) {
-        // Re-check status or use login response data to update state
-        await checkAuthStatus(); // Re-fetch user data after successful login
-        // Or if login returns user data:
-        // const loginData = await response.json();
-        // setUser(loginData.user);
-        // setIsAuthenticated(true);
+        const loginData = await response.json();
+        setUser(loginData.user);
+        setIsAuthenticated(true);
         setIsLoading(false);
-        return true; // Indicate success
+        return true;
       } else {
-        // Handle login failure (e.g., display error message)
+        const error = await response.json();
         console.error('Login failed:', response.statusText);
         setIsLoading(false);
-        return false; // Indicate failure
+        setServerErrors(error.errors || ['Login failed']);
+        return false;
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -129,6 +135,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isLoading,
     login,
     logout,
+    serverErrors,
+    email,
+    setEmail,
+    password,
+    setPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

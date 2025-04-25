@@ -1,7 +1,9 @@
 import { Link, useMatchRoute } from '@tanstack/react-router';
+import { useAuth } from '../auth/use-auth-hook';
 
 export const Navbar = () => {
   const matchRoute = useMatchRoute();
+  const { isAuthenticated } = useAuth();
 
   const isHomeActive = matchRoute({ to: '/', fuzzy: false });
   const isLoginActive = matchRoute({ to: '/login', fuzzy: false });
@@ -17,12 +19,14 @@ export const Navbar = () => {
           Home
         </Link>
       </div>
-      <Link
-        to="/login"
-        className={`btn btn-soft btn-accent mx-2 ${isLoginActive ? 'btn-active' : ''}`}
-      >
-        Login
-      </Link>
+      {!isAuthenticated && (
+        <Link
+          to="/login"
+          className={`btn btn-soft btn-accent mx-2 ${isLoginActive ? 'btn-active' : ''}`}
+        >
+          Login
+        </Link>
+      )}
       <Link
         to="/my-page"
         className={`btn btn-soft btn-accent mx-2 ${isMyPageActive ? 'btn-active' : ''}`}

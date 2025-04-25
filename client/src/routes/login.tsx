@@ -1,12 +1,7 @@
-import {
-  createFileRoute,
-  Link,
-  useSearch,
-  useNavigate,
-} from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { CircleX } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import { useEffect } from 'react';
+import { useAuth } from '../auth/use-auth-hook';
 
 export const Route = createFileRoute('/login')({
   component: RouteComponent,
@@ -14,71 +9,62 @@ export const Route = createFileRoute('/login')({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const searchParams = useSearch({ from: '/login' }) as { message: string };
-  const message = searchParams.message;
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [serverErrors, setServerErrors] = useState<string[]>([]);
-  const toastShownRef = useRef(false); // Track if the toast has been shown
+  const {
+    login,
+    serverErrors,
+    isAuthenticated,
+    email,
+    setEmail,
+    password,
+    setPassword,
+  } = useAuth();
 
   useEffect(() => {
-    if (message && !toastShownRef.current) {
-      toast.error(message, { duration: 3000 });
-      toastShownRef.current = true; // Mark the toast as shown
+    if (isAuthenticated) {
+      navigate({ to: '/my-page' });
     }
-  }, [message]);
+  }, [isAuthenticated, navigate]);
 
-  const handleClick = async () => {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    if (response.ok) {
-      setServerErrors([]);
-      navigate({ to: '/my-page' })
-    } else {
-      const error = await response.json();
-      setServerErrors(error.errors);
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login({ email, password });
   };
 
   return (
     <>
       <div className="flex flex-col items-center justify-center p-12">
-        <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
-          <legend className="fieldset-legend">Login</legend>
+        <form onSubmit={handleSubmit}>
+          <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
+            <legend className="fieldset-legend">Login</legend>
 
-          <label className="fieldset-label">Email</label>
-          <input
-            type="email"
-            className="input validator"
-            placeholder="Email"
-            required
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <div className="validator-hint mt-0">Enter valid email address</div>
+            <label className="fieldset-label">Email</label>
+            <input
+              type="email"
+              className="input validator"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <div className="validator-hint mt-0">Enter valid email address</div>
 
-          <label className="fieldset-label">Password</label>
-          <input
-            type="password"
-            className="input validator"
-            required
-            minLength={10}
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className="validator-hint mt-0">
-            Password must be at least 10 characters
-          </div>
+            <label className="fieldset-label">Password</label>
+            <input
+              type="password"
+              className="input validator"
+              required
+              minLength={10}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div className="validator-hint mt-0">
+              Password must be at least 10 characters
+            </div>
 
-          <button className="btn btn-accent" onClick={handleClick}>
-            Login
-          </button>
-        </fieldset>
+            <button className="btn btn-accent">Login</button>
+          </fieldset>
+        </form>
         <p className="p-6">
           Don't have an account?{' '}
           <Link to="/signup" className="link link-secondary">
@@ -100,7 +86,6 @@ function RouteComponent() {
           </div>
         )}
       </div>
-      <Toaster position="top-center" />
     </>
   );
 }
