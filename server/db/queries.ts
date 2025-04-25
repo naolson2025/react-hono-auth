@@ -42,3 +42,27 @@ export const getUserById = (db: Database, id: string) => {
   } | null;
   return user;
 };
+
+export const getUserFavorites = (db: Database, id: string) => {
+  const favoritesQuery = db.query(
+    'SELECT color, animal FROM users WHERE id =?'
+  );
+  const user = favoritesQuery.get(id) as {
+    color: string;
+    animal: string;
+  } | null;
+  return user;
+}
+
+export const updateUserFavorites = (
+  db: Database,
+  id: string,
+  color?: string,
+  animal?: string,
+) => {
+  const updateQuery = db.query(
+    'UPDATE users SET favorite_color = ?, favorite_animal = ? WHERE id = ?'
+  );
+  const user = updateQuery.run(color ?? null, animal ?? null, id);
+  return user;
+}

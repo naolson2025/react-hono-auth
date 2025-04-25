@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it } from 'bun:test';
-import { insertUser } from './queries';
+import { insertUser, updateUserFavorites, getUserFavorites } from './queries';
 import { createTestDb } from '../test/test-db';
 import { Database } from 'bun:sqlite';
 
@@ -46,3 +46,13 @@ it('should throw an error if the password is empty', async () => {
     expect(error.message).toMatch(/password must not be empty/);
   }
 });
+
+it('should update a users favorites', async () => {
+  const email = 'test@test.com';
+  const password = 'password123';
+  const userId = await insertUser(db, email, password);
+  const color = 'blue';
+  const animal = 'dog';
+  const user = updateUserFavorites(db, userId, color, animal);
+  console.log(user);
+})
