@@ -25,6 +25,8 @@ function RouteComponent() {
   const [animal, setAnimal] = useState('');
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const [success, setSuccess] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     const fetchUserSettings = async () => {
@@ -82,11 +84,58 @@ function RouteComponent() {
         const errorData = await response.json();
         setServerErrors(errorData.errors || ['An unknown error occurred']);
         setSuccess(false);
+        setTimeout(() => {
+          setServerErrors([]);
+        }, 3000);
       }
     } catch (error) {
       console.error('Error saving settings:', error);
       setServerErrors(['An error occurred while saving settings']);
       setSuccess(false);
+      setTimeout(() => {
+        setServerErrors([]);
+      }, 3000);
+    }
+  };
+
+  const handlePasswordUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/auth/update-password', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+      const data = await response.json();
+      console.log('Response data:', data);
+      if (response.ok) {
+        setSuccess(true);
+        setServerErrors([]);
+        setTimeout(() => {
+          setSuccess(false);
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        setServerErrors(errorData.errors || ['An unknown error occurred']);
+        setSuccess(false);
+        setTimeout(() => {
+          setServerErrors([]);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      setServerErrors(['An error occurred while updating password']);
+      setSuccess(false);
+      setTimeout(() => {
+        setServerErrors([]);
+      }, 3000);
     }
   };
 
@@ -114,6 +163,32 @@ function RouteComponent() {
             placeholder="panda..."
             value={animal}
             onChange={(e) => setAnimal(e.target.value)}
+          />
+
+          <button className="btn btn-primary mt-4">Save</button>
+        </fieldset>
+      </form>
+
+      <form onSubmit={handlePasswordUpdateSubmit}>
+        <fieldset className="fieldset w-xs p-4">
+          <legend className="fieldset-legend">Update Password</legend>
+
+          <label className="label">Current Password</label>
+          <input
+            type="password"
+            className="input"
+            placeholder="Current Password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+
+          <label className="label">New Password</label>
+          <input
+            type="password"
+            className="input"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
           />
 
           <button className="btn btn-primary mt-4">Save</button>

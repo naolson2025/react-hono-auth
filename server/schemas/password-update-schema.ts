@@ -2,11 +2,11 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 
 export const passwordUpdateSchema = z.object({
-  currentPassword: z.string().min(10, {
+  currentPassword: z.string({ message: 'current password required' }).min(10, {
     message: 'Current password must be at least 10 characters long',
   }),
   newPassword: z
-    .string()
+    .string({ message: 'new password required' })
     .min(10, { message: 'Password must be at least 10 characters long' }),
 });
 
