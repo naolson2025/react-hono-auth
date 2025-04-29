@@ -6,7 +6,7 @@ export const cookieOpts = {
   secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
   sameSite: 'Lax', // Or 'Strict'
   path: '/',
-  maxAge: 86400, // 24 hours in seconds
+  maxAge: 3600, // 1 hour
 } as CookieOptions;
 
 export const generateToken = async (userId: string) => {
@@ -15,7 +15,7 @@ export const generateToken = async (userId: string) => {
   const payload = {
     sub: userId, // subject
     iat: now, // Issued At
-    exp: now + 24 * 60 * 60, // Expiration Time (24 hours)
+    exp: now + 1 * 60 * 60, // Expiration Time (1 hour)
   };
   const token = await sign(payload, secret!);
   return token;

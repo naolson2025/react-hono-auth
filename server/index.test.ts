@@ -36,7 +36,7 @@ describe('signup endpoint', () => {
     expect(cookies).toMatch(/HttpOnly/);
     expect(cookies).toMatch(/SameSite=Lax/);
     expect(cookies).toMatch(/Path=\//);
-    expect(cookies).toMatch(/Max-Age=86400/);
+    expect(cookies).toMatch(/Max-Age=3600/);
   });
 
   it('should return 409 if email already exists', async () => {
@@ -84,7 +84,7 @@ describe('login endpoint', () => {
     expect(cookies).toMatch(/HttpOnly/);
     expect(cookies).toMatch(/SameSite=Lax/);
     expect(cookies).toMatch(/Path=\//);
-    expect(cookies).toMatch(/Max-Age=86400/);
+    expect(cookies).toMatch(/Max-Age=3600/);
   });
 
   it('should return 400 if email or password is missing', async () => {

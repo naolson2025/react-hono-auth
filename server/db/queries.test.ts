@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { insertUser, updateUserFavorites, getUserFavorites } from './queries';
+import {
+  insertUser,
+  updateUserFavorites,
+  getUserFavorites,
+  updateUserPassword,
+} from './queries';
 import { createTestDb } from '../test/test-db';
 import { Database } from 'bun:sqlite';
 
@@ -79,9 +84,28 @@ describe('getUserFavorites', () => {
     expect(user?.favorite_color).toBe(color);
     expect(user?.favorite_animal).toBe(animal);
   });
-  
+
   it('should return null if user does not exist', async () => {
     const user = getUserFavorites(db, 'nonexistent-id');
     expect(user).toBeNull();
+  });
+});
+
+describe('updateUserPassword', () => {
+  it('should update a users password', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+    const userId = await insertUser(db, email, password);
+    const newPassword = 'newpassword123';
+    const user = await updateUserPassword(db, userId, newPassword);
+    expect(user).toBeDefined();
+    expect(user?.email).toBe(email);
+
+    // Verify that the password was updated
+    const query = db.query('SELECT password_hash FROM users WHERE id = ?');
+    const result = query.get(userId) as { password_hash: string }
+    expect(result).toBeDefined();
+    const valid = await Bun.password.verify(newPassword, result.password_hash)
+    expect(valid).toBe(true);
   });
 });

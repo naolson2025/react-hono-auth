@@ -43,6 +43,28 @@ export const getUserById = (db: Database, id: string) => {
   return user;
 };
 
+export const updateUserPassword = async (
+  db: Database,
+  id: string,
+  password: string
+) => {
+  const passwordHash = await Bun.password.hash(password);
+
+  const updateQuery = db.query(
+    `
+    UPDATE users
+    SET password_hash = ?
+    WHERE id = ?
+    RETURNING id, email
+    `
+  );
+  const user = updateQuery.get(passwordHash, id) as {
+    id: string;
+    email: string;
+  } | null;
+  return user;
+};
+
 export const getUserFavorites = (db: Database, id: string) => {
   const favoritesQuery = db.query(
     'SELECT id, favorite_color, favorite_animal FROM users WHERE id =?'
