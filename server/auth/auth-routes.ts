@@ -1,9 +1,16 @@
 import { Hono } from 'hono';
 import { setCookie, deleteCookie } from 'hono/cookie';
-import { getUserByEmail, getUserById, insertUser } from '../db/queries';
+import {
+  getUserByEmail,
+  getUserById,
+  insertUser,
+  updateUserPassword,
+  validatePassword,
+} from '../db/queries';
 import { cookieOpts, generateToken } from '../auth/helpers';
 import { dbConn } from '../db/db';
 import { loginValidator } from '../schemas/login-schema';
+import { passwordUpdateValidator } from '../schemas/password-update-schema';
 
 export const auth = new Hono();
 
@@ -101,6 +108,35 @@ auth
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  })
+  .patch('/api/auth/update-password', passwordUpdateValidator, async (c) => {
+    const db = dbConn();
+    const payload = c.get('jwtPayload');
+    const { currentPassword, newPassword } = c.req.valid('json');
+
+    if (!payload || !payload.sub) {
+      return c.json({ error: 'Invalid token payload' }, 401);
+    }
+
+    try {
+      const valid = await validatePassword(db, payload.sub, currentPassword);
+      if (!valid) {
+        return c.json({ error: 'Invalid current password' }, 401);
+      }
+      const user = await updateUserPassword(db, payload.sub, newPassword);
+
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+
+      return c.json({
+        message: 'Password updated successfully',
+        user: { id: user.id, email: user.email },
+      });
+    } catch (error) {
+      console.error('Error updating password:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
   });

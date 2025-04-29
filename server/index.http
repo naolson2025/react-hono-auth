@@ -48,3 +48,13 @@ Cookie: {{login.response.headers.Set-Cookie}}
   "favorite_color": "red",
   "favorite_animal": "panda"
 }
+
+### Update password
+PATCH http://localhost:3000/api/auth/update-password
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+  "currentPassword": "password123",
+  "newPassword": "newpassword123"
+}

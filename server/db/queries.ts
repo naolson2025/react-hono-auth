@@ -43,6 +43,27 @@ export const getUserById = (db: Database, id: string) => {
   return user;
 };
 
+export const validatePassword = async (
+  db: Database,
+  id: string,
+  password: string
+) => {
+  const userQuery = db.query(
+    'SELECT password_hash FROM users WHERE id =?'
+  );
+  const user = userQuery.get(id) as {
+    password_hash: string;
+  } | null;
+  if (!user) {
+    return false;
+  }
+  const passwordMatch = await Bun.password.verify(
+    password,
+    user.password_hash
+  );
+  return passwordMatch;
+};
+
 export const updateUserPassword = async (
   db: Database,
   id: string,
