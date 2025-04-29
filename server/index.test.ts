@@ -49,7 +49,7 @@ describe('signup endpoint', () => {
     const json = await res2.json();
     expect(res2.status).toBe(409);
     expect(json).toEqual({
-      error: 'Email already exists',
+      errors: ['Email already exists'],
     });
   });
 
@@ -103,7 +103,7 @@ describe('login endpoint', () => {
     const json = await res.json();
     expect(res.status).toBe(401);
     expect(json).toEqual({
-      error: 'Invalid credentials',
+      errors: ['Invalid credentials'],
     });
   });
 
@@ -117,7 +117,7 @@ describe('login endpoint', () => {
     const json = await res2.json();
     expect(res2.status).toBe(401);
     expect(json).toEqual({
-      error: 'Invalid credentials',
+      errors: ['Invalid credentials'],
     });
   });
 });
@@ -170,8 +170,8 @@ describe('api/protected/me endpoint', () => {
       },
     });
     const res2 = await app.fetch(meReq);
-    const resBody = await res2.text()
+    const resBody = await res2.text();
     expect(res2.status).toBe(401);
     expect(resBody).toBe('Unauthorized');
-  })
+  });
 });

@@ -45,24 +45,33 @@ export const getUserById = (db: Database, id: string) => {
 
 export const getUserFavorites = (db: Database, id: string) => {
   const favoritesQuery = db.query(
-    'SELECT color, animal FROM users WHERE id =?'
+    'SELECT id, favorite_color, favorite_animal FROM users WHERE id =?'
   );
   const user = favoritesQuery.get(id) as {
-    color: string;
-    animal: string;
+    id: string;
+    favorite_color: string;
+    favorite_animal: string;
   } | null;
   return user;
-}
+};
 
 export const updateUserFavorites = (
   db: Database,
   id: string,
   color?: string,
-  animal?: string,
+  animal?: string
 ) => {
   const updateQuery = db.query(
-    'UPDATE users SET favorite_color = ?, favorite_animal = ? WHERE id = ?'
+    `
+    UPDATE users
+    SET favorite_color = ?, favorite_animal = ?
+    WHERE id = ?
+    RETURNING id, favorite_color, favorite_animal`
   );
-  const user = updateQuery.run(color ?? null, animal ?? null, id);
-  return user;
-}
+  const user = updateQuery.get(color ?? null, animal ?? null, id);
+  return user as {
+    id: string;
+    favorite_color: string;
+    favorite_animal: string;
+  } | null;
+};

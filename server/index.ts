@@ -5,6 +5,7 @@ import type { JwtVariables } from 'hono/jwt';
 import { csrf } from 'hono/csrf';
 import { cors } from 'hono/cors';
 import { auth } from './auth/auth-routes';
+import { userSettings } from './user-settings/user-settings-routes';
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -23,6 +24,7 @@ const route = app
     jwt({ secret: process.env.JWT_SECRET!, cookie: 'authToken' })
   )
   .route('/', auth)
+  .route('/api/auth/user-settings', userSettings)
 
 
 export type AppType = typeof route;

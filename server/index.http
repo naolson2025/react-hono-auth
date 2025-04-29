@@ -34,3 +34,17 @@ Cookie: {{login.response.headers.Set-Cookie}}
 POST http://localhost:3000/api/logout
 Content-Type: application/json
 Cookie: {{login.response.headers.Set-Cookie}}
+
+### Get user settings
+GET http://localhost:3000/api/auth/user-settings
+Cookie: {{login.response.headers.Set-Cookie}}
+
+### Update user settings
+PUT http://localhost:3000/api/auth/user-settings
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+  "favorite_color": "red",
+  "favorite_animal": "panda"
+}

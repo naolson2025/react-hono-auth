@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { insertUser, updateUserFavorites, getUserFavorites } from './queries';
 import { createTestDb } from '../test/test-db';
 import { Database } from 'bun:sqlite';
@@ -26,8 +26,7 @@ it('should throw an error if the email already exists', async () => {
   await insertUser(db, email, password);
   try {
     await insertUser(db, email, password);
-  }
-  catch (error) {
+  } catch (error) {
     expect(error).toBeInstanceOf(Error);
     // @ts-ignore
     expect(error.message).toMatch(/UNIQUE constraint failed/);
@@ -39,20 +38,50 @@ it('should throw an error if the password is empty', async () => {
   const password = '';
   try {
     await insertUser(db, email, password);
-  }
-  catch (error) {
+  } catch (error) {
     expect(error).toBeInstanceOf(Error);
     // @ts-ignore
     expect(error.message).toMatch(/password must not be empty/);
   }
 });
 
-it('should update a users favorites', async () => {
-  const email = 'test@test.com';
-  const password = 'password123';
-  const userId = await insertUser(db, email, password);
-  const color = 'blue';
-  const animal = 'dog';
-  const user = updateUserFavorites(db, userId, color, animal);
-  console.log(user);
-})
+describe('updateUserFavorites', () => {
+  it('should update a users favorites', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+    const userId = await insertUser(db, email, password);
+    const color = 'blue';
+    const animal = 'dog';
+    const user = updateUserFavorites(db, userId, color, animal);
+    expect(user).toBeDefined();
+    expect(user?.favorite_color).toBe(color);
+    expect(user?.favorite_animal).toBe(animal);
+  });
+
+  it('should return null if user does not exist', async () => {
+    const color = 'blue';
+    const animal = 'dog';
+    const user = updateUserFavorites(db, 'nonexistent-id', color, animal);
+    expect(user).toBeNull();
+  });
+});
+
+describe('getUserFavorites', () => {
+  it('should get a users favorites', async () => {
+    const email = 'test@test.com';
+    const password = 'password123';
+    const userId = await insertUser(db, email, password);
+    const color = 'blue';
+    const animal = 'dog';
+    updateUserFavorites(db, userId, color, animal);
+    const user = getUserFavorites(db, userId);
+    expect(user).toBeDefined();
+    expect(user?.favorite_color).toBe(color);
+    expect(user?.favorite_animal).toBe(animal);
+  });
+  
+  it('should return null if user does not exist', async () => {
+    const user = getUserFavorites(db, 'nonexistent-id');
+    expect(user).toBeNull();
+  });
+});
