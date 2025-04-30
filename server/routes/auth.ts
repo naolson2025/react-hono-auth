@@ -7,7 +7,7 @@ import {
   updateUserPassword,
   validatePassword,
 } from '../db/queries';
-import { cookieOpts, generateToken } from '../auth/helpers';
+import { cookieOpts, generateToken } from '../helpers';
 import { dbConn } from '../db/db';
 import { loginValidator } from '../schemas/login-schema';
 import { passwordUpdateValidator } from '../schemas/password-update-schema';
