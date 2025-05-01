@@ -5,7 +5,7 @@ export const cookieOpts = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
   sameSite: 'Lax', // Or 'Strict'
-  path: '/',
+  path: '/', // makes the cookie available on all routes
   maxAge: 3600, // 1 hour
 } as CookieOptions;
 
